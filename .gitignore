@@ -1,0 +1,6 @@
+.env
+artifacts/
+models/
+*.gguf
+*.log
+__pycache__/

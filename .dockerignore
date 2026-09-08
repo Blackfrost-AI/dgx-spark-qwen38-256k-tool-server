@@ -1,0 +1,6 @@
+.git
+.github
+artifacts
+models
+*.gguf
+*.jsonl
