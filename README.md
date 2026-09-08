@@ -1,11 +1,19 @@
 # Qwen3.8 Flash Next at 256K on one DGX Spark
 
+[![validate package](https://github.com/Blackfrost-AI/dgx-spark-qwen38-256k-tool-server/actions/workflows/validate.yml/badge.svg)](https://github.com/Blackfrost-AI/dgx-spark-qwen38-256k-tool-server/actions/workflows/validate.yml)
+
 This project packages a patched llama.cpp server for Qwen3.8 Flash Next on one
 NVIDIA DGX Spark. It targets a 262,144-token slot, OpenAI-compatible tool calls,
 and MTP speculative decoding in a CUDA 13 ARM64 container.
 
 The repository contains serving code and reproducible validation only. Model
 weights are not included.
+
+The reference run retrieved a nonce from a 257,994-token chat-formatted prompt
+at 245.6 prompt tokens/second while retaining 24.60 GiB of host-available
+memory. At 256K, the packaged server passed four parsed tool-call cases and a
+tool-result continuation. Warm 128K tool calls measured 42.7 to 51.1 generated
+tokens/second.
 
 ## What is pinned
 
@@ -89,7 +97,7 @@ Validate parsed tools and the tool-result continuation:
 python3 scripts/validate-tools.py
 ```
 
-Exercise a 257,993-token retrieval prompt against the 262,144-token slot:
+Exercise a near-cap retrieval prompt against the 262,144-token slot:
 
 ```bash
 python3 scripts/validate-context.py
