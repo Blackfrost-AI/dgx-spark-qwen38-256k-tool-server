@@ -69,10 +69,10 @@ def main() -> int:
         ["x", "y"],
     )
     cases = [
-        ("auto-weather", "Call get_weather for San Francisco.", weather, "auto", "get_weather"),
-        ("required-weather", "Call get_weather for Seattle.", weather, "required", "get_weather"),
-        ("auto-math", "Use multiply to calculate 17 times 23.", multiply, "auto", "multiply"),
-        ("required-math", "Use multiply to calculate 31 times 7.", multiply, "required", "multiply"),
+        ("parser-weather-sf", "Call get_weather for San Francisco.", weather, "required", "get_weather"),
+        ("parser-weather-seattle", "Call get_weather for Seattle.", weather, "required", "get_weather"),
+        ("parser-math-17x23", "Use multiply to calculate 17 times 23.", multiply, "required", "multiply"),
+        ("parser-math-31x7", "Use multiply to calculate 31 times 7.", multiply, "required", "multiply"),
     ]
 
     rows = []
@@ -99,7 +99,7 @@ def main() -> int:
         model,
         "Use get_weather for Portland, then report its result.",
         weather,
-        "auto",
+        "required",
     )
     assistant = first["choices"][0]["message"]
     calls = assistant.get("tool_calls") or []

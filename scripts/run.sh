@@ -12,6 +12,7 @@ MODEL_ALIAS="${MODEL_ALIAS:-qwen3.8-flash-next-spark}"
 CTX_SIZE="${CTX_SIZE:-262144}"
 BIND_ADDR="${BIND_ADDR:-127.0.0.1}"
 HOST_PORT="${HOST_PORT:-30000}"
+SECOND_BIND_ADDR="${SECOND_BIND_ADDR:-}"
 
 case "${CTX_SIZE}" in
     131072|262144) ;;
@@ -24,6 +25,11 @@ for path in "${MODEL_DIR}/${MODEL_FILE}" "${MTP_DIR}/${MTP_FILE}"; do
         exit 2
     fi
 done
+
+publish_args=(--publish "${BIND_ADDR}:${HOST_PORT}:30000")
+if [[ -n "${SECOND_BIND_ADDR}" ]]; then
+    publish_args+=(--publish "${SECOND_BIND_ADDR}:${HOST_PORT}:30000")
+fi
 
 if docker container inspect "${CONTAINER_NAME}" >/dev/null 2>&1; then
     echo "Container already exists: ${CONTAINER_NAME}" >&2
@@ -39,7 +45,7 @@ container_id="$(docker create \
     --memory 116g \
     --memory-swap 116g \
     --stop-timeout 30 \
-    --publish "${BIND_ADDR}:${HOST_PORT}:30000" \
+    "${publish_args[@]}" \
     --mount "type=bind,src=${MODEL_DIR},dst=/models,readonly" \
     --mount "type=bind,src=${MTP_DIR},dst=/mtp,readonly" \
     --mount "type=volume,src=${CONTAINER_NAME}-cuda-cache,dst=/cuda-cache" \
