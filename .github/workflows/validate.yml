@@ -1,0 +1,37 @@
+name: validate package
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  static-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check scripts
+        run: |
+          bash -n scripts/run.sh scripts/wait-health.sh scripts/start-memory-guard.sh
+          python3 - <<'PY'
+          import ast
+          from pathlib import Path
+          for path in Path("scripts").glob("*.py"):
+              ast.parse(path.read_text())
+              print(path)
+          PY
+
+      - name: Check patches against pinned source
+        env:
+          LLAMA_CPP_COMMIT: d1a92352cbd417fd840b4e765c0b82f5fe3d1d89
+        run: |
+          git clone --filter=blob:none https://github.com/danielhanchen/llama.cpp.git /tmp/llama.cpp
+          git -C /tmp/llama.cpp checkout --detach "${LLAMA_CPP_COMMIT}"
+          git -C /tmp/llama.cpp apply --check "${GITHUB_WORKSPACE}/patches/0001-qwen38-spark-runtime.patch"
+          git -C /tmp/llama.cpp apply --check "${GITHUB_WORKSPACE}/patches/0002-lazy-reader.patch"
+          git -C /tmp/llama.cpp apply "${GITHUB_WORKSPACE}/patches/0001-qwen38-spark-runtime.patch"
+          git -C /tmp/llama.cpp apply "${GITHUB_WORKSPACE}/patches/0002-lazy-reader.patch"
+          git -C /tmp/llama.cpp diff --check

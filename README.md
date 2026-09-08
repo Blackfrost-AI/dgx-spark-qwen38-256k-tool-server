@@ -16,9 +16,10 @@ weights are not included.
 - one 262,144-token slot with 256-token microbatches
 - Jinja chat rendering and DeepSeek-style reasoning separation for parsed tools
 
-The patch adds the Qwen4-preview/GDN/MTP path used by Qwen3.8 Flash Next,
-on-demand per-layer embedding reads, and the GB10 CUDA attention correction
-needed by the tested build.
+The pinned fork already supplies the experimental Qwen4 and shared-MTP model
+paths. The local patches refine GDN normalization, add direct PLE reads, and
+correct the parallel-warp CUDA synchronization path. See
+[docs/architecture.md](docs/architecture.md) for the exact scope.
 
 ## Build
 
@@ -37,8 +38,17 @@ Place all four main-model GGUF shards in one directory and the shared Q8_0 MTP
 GGUF in another. Then run:
 
 ```bash
-export MODEL_DIR=/path/to/main-model-gguf
-export MTP_DIR=/path/to/mtp-gguf
+hf download unsloth/Qwen3.8-Flash-Next-GGUF \
+  --include 'UD-Q4_K_XL/*' \
+  --include 'MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf' \
+  --local-dir qwen38-flash-next-gguf
+```
+
+Point the launcher at the two downloaded subdirectories:
+
+```bash
+export MODEL_DIR="$PWD/qwen38-flash-next-gguf/UD-Q4_K_XL"
+export MTP_DIR="$PWD/qwen38-flash-next-gguf/MTP"
 ./scripts/run.sh
 ./scripts/wait-health.sh
 ```
